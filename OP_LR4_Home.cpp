@@ -1,32 +1,34 @@
-п»ї#include <iostream>
+#include <iostream>
 #include <cstring>
 #include <cmath>
+#include <fstream>
+#include <math.h>
 
 using namespace std;
 double str_to_int(string help);
 
 typedef struct
 {
-	int8_t id[2];            // Р—Р°РІР¶РґРё РґРІС– Р»С–С‚РµСЂРё 'B' С– 'M' //С‰Рµ РјР°СЋС‚СЊ Р±СѓС‚Рё РґР°РЅС– РїСЂРѕ Р±С–С‚ Р· СЏРєРѕРіРѕ РїРѕС‡РёРЅР°С”С‚СЊСЃСЏ Р·Р°РїРёСЃ РєРѕР»СЊРѕСЂС–РІ С– РґРѕРІР¶РёРЅР° РґРІРѕС… С…РµРґРµСЂС–РІ, РЅР°Рј РЅР°С‡Рµ Р»РёС€Рµ РґР°РЅС– Р· РїРµСЂС€РѕРіРѕ РїРѕС‚СЂС–Р±РЅС–, С‚РѕРјСѓ РјРѕР¶РЅР° РїРµСЂРµСЃРєРѕС‡РёС‚Рё Р° РїРѕС‚С–Рј РєРѕРїС–СЂРЅСѓС‚Рё РІСЃС– РїРѕС‡Р°С‚РєРѕРІС– РґР°РЅС– Р· РЅРµРІРµР»РёРєРёРјРё Р·Р°РјС–РЅР°РјРё
-	int32_t filesize;        // Р РѕР·РјС–СЂ С„Р°Р№Р»Р° РІ Р±Р°Р№С‚Р°С…                                   NEED
+	int8_t id[2];            // Завжди дві літери 'B' і 'M' //ще мають бути дані про біт з якого починається запис кольорів і довжина двох хедерів, нам наче лише дані з першого потрібні, тому можна перескочити а потім копірнути всі початкові дані з невеликими замінами
+	int32_t filesize;        // Розмір файла в байтах                                   NEED
 	int16_t reserved[2] = { 0,0 };     // 0, 0
-	int32_t headersize = 54L;      // 54L РґР»СЏ 24-Р±С–С‚РЅРёС… Р·РѕР±СЂР°Р¶РµРЅСЊ
-	int32_t infoSize = 40L;        // 40L РґР»СЏ 24-Р±С–С‚РЅРёС… Р·РѕР±СЂР°Р¶РµРЅСЊ
-	int32_t width;           // С€РёСЂРёРЅР° Р·РѕР±СЂР°Р¶РµРЅРЅСЏ РІ РїС–РєСЃРµР»СЏС…                            NEED
-	int32_t hight;           // РІРёСЃРѕС‚Р° Р·РѕР±СЂР°Р¶РµРЅРЅСЏ РІ РїС–РєСЃРµР»СЏС…                            NEED
-	int16_t biPlanes = 1;        // 1 (РґР»СЏ 24-Р±С–С‚РЅРёС… Р·РѕР±СЂР°Р¶РµРЅСЊ)
-	int16_t bits = 24;            // 24 (РґР»СЏ 24-Р±С–С‚РЅРёС… Р·РѕР±СЂР°Р¶РµРЅСЊ)
+	int32_t headersize = 54L;      // 54L для 24-бітних зображень
+	int32_t infoSize = 40L;        // 40L для 24-бітних зображень
+	int32_t width;           // ширина зображення в пікселях                            NEED
+	int32_t hight;           // висота зображення в пікселях                            NEED
+	int16_t biPlanes = 1;        // 1 (для 24-бітних зображень)
+	int16_t bits = 24;            // 24 (для 24-бітних зображень)
 	int32_t biCompression = 0L;   // 0L
-	int32_t biSizeImage = 0L;     // РњРѕР¶РЅР° РїРѕСЃС‚Р°РІРёС‚Рё РІ 0L РґР»СЏ Р·РѕР±СЂР°Р¶РµРЅСЊ Р±РµР· РєРѕРјРїСЂРµСЃСЃС–С— (РЅР°С€ РІР°СЂС–Р°РЅС‚)
-	int32_t biXPelsPerMeter = 0L; // Р РµРєРѕРјРµРЅРґРѕРІР°РЅР° РєС–Р»СЊРєС–СЃС‚СЊ РїС–РєСЃРµР»С–РІ РЅР° РјРµС‚СЂ, РјРѕР¶РЅР° 0L //С‰Рµ С‚Р°Рј РґРµСЃСЊ РјР°С” Р±СѓС‚Рё СЂРѕР·РјС–СЂ РІ "РјРµС‚СЂР°С…", РјРѕР¶РёРІРѕ РІС–РЅ С‚РµР¶ РїРѕС‚СЂС–Р±РЅРёР№
-	int32_t biYPelsPerMeter = 0L; // РўРµ СЃР°РјРµ, РїРѕ РІРёСЃРѕС‚С–
-	int32_t biClrUsed = 0L;       // Р”Р»СЏ С–РЅРґРµРєСЃРѕРІР°РЅРёС… Р·РѕР±СЂР°Р¶РµРЅСЊ, РјРѕР¶РЅР° РїРѕСЃС‚Р°РІРёС‚Рё 0L
-	int32_t biClrImportant = 0L;  // РўРµ СЃР°РјРµ
+	int32_t biSizeImage = 0L;     // Можна поставити в 0L для зображень без компрессії (наш варіант)
+	int32_t biXPelsPerMeter = 0L; // Рекомендована кількість пікселів на метр, можна 0L //ще там десь має бути розмір в "метрах", моживо він теж потрібний
+	int32_t biYPelsPerMeter = 0L; // Те саме, по висоті
+	int32_t biClrUsed = 0L;       // Для індексованих зображень, можна поставити 0L
+	int32_t biClrImportant = 0L;  // Те саме
 } BMPHEAD;
 typedef struct
 {
 	int8_t redComponent;      //00 00 ff 00
-	int8_t greenComponent;    //00 ff 00 00    00 00 00 ff - alpha// С†Рµ РІР¶Рµ Р·Р°РїРёСЃР°РЅРѕ РІ Р·РІРѕСЂРѕС‚РЅСЊРѕРјСѓ РїРѕСЂСЏРґРєСѓ
+	int8_t greenComponent;    //00 ff 00 00    00 00 00 ff - alpha// це вже записано в зворотньому порядку
 	int8_t blueComponent;     //ff 00 00 00
 } PIXELDATA;
 typedef struct
@@ -41,45 +43,141 @@ typedef struct
 class Picture
 {
 public:
-	Picture(string inFile,string outFile,double augment);
-	void resize_picture();//Р¤СѓРЅРєС†С–СЏ РґРѕСЃС‚СѓРїРЅР° РєРѕСЂРёСЃС‚СѓРІР°С‡Сѓ, РїСЂРѕСЃС‚Рѕ РґР»СЏ С–РЅС–С†С–Р°Р»С–Р·Р°С†С–С— СЂРѕР±РѕС‚Рё
-private:/*СЃСЋРґРё РїРѕС‚СЂС–Р±РЅРѕ С„СѓРЅРєС†С–С—: 
-		1)Р·С‡РёС‚СѓРІР°РЅРЅСЏ РґР°РЅРёС… Р· С„Р°Р№Р»Сѓ 
-		1.5)РЎРµС‚С‚РµСЂРё С– Р“РµС‚С‚РµСЂРё
-		2)РїРµСЂРµРїРёСЃ РјР°СЃРёРІСѓ Р· РєРѕР»СЊРѕСЂР°РјРё РїС–РєСЃРµР»С–РІ РІ Р±С–Р»СЊС€РёР№ СЂРѕР·РјС–СЂ  ---------------------Р“РѕС‚РѕРІРѕ
-		2.1) РњРѕР¶РЅР° РїРѕРїРµСЂРµРґРЅСЊ Р·Р°РїРѕРІРЅРёС‚Рё С†РµР№ РјР°СЃРёРІ РєРѕР»СЊРѕСЂР°РјРё NULL, С‰РѕР± РЅРµ Р±С–Р»Рѕ С‚СЂР°Р±Р»С–РІ РїСЂРё Р·С‡РёС‚СѓРІР°РЅРЅС– + Р±СѓРґРµ Р·РјРѕРіР° Р·РЅР°Р№С‚Рё "РїРѕСЂРѕР¶РЅС–" РїС–РєСЃРµР»С– -----------------Р“РѕС‚РѕРІРѕ
-		3)СЃР°РјР° С–РЅС‚РµСЂРїРѕР»СЏС†С–СЏ. РЇ Р·Р° Р±С–РєСѓР±С–С‡РЅСѓ (С‡Рё РІР·Р°РіР°Р»С– Р±С–Р»С–РЅС–Р№РЅСѓ, Р±Рѕ С„С–Р»СЊС‚ Р›Р°РЅС†РѕС€Р° СЏ РїРѕСЃРµСЂРµРґ РЅРѕС‡С– РЅРµ РІСЂСѓР±Р°СЋ). Р’РѕРЅР° РІРёРєРѕРЅСѓС”С‚СЊСЃСЏ РЅР°Рґ РІСЃС–Рј РјР°СЃРёРІРѕРј РґР°РЅРёС… ------------------Р“РѕС‚РѕРІРѕ
-		4)Р¤СѓРЅРєС†С–СЏ РґР»СЏ Р·Р°РїРёСЃСѓ РґР°РЅРёС… РЅР°Р·Р°Рґ РІ РЅРѕРІРёР№ С„Р°Р№Р». РЁР°РїРєР° Р·РјС–РЅСЋС”С‚СЊСЃСЏ Р»РёС€Рµ РІ РјС–СЃС†С– СЂРѕР·РјС–СЂСѓ С„Р°Р№Р»Р° С‚Р° РґРѕРІР¶РёРЅР°С… СЃС‚РѕСЂС–РЅ
-		5)https://www.cambridgeincolour.com/ru/tutorials-ru/image-interpolation.htm + https://www.youtube.com/watch?v=Y8EBRn4Bf70 (С‚СѓС‚ РґСѓР¶Рµ РґРѕР±СЂРµ РІС–РЅ СЂРѕР·РєР°Р·Р° С‰Рѕ Р·Р° С‡РёРј Р№РґРµ С‚РѕРјСѓ РЅР°Рј Р±РґРµ Р»РµРіРєРѕ Р·РЅР°Р№С‚Рё РІРїРѕС‚СЂС–Р±РЅС– РґР°РЅС–)
+	Picture(string inFile, string outFile, double augment);
+	void resize_picture();//Функція доступна користувачу, просто для ініціалізації роботи
+private:/*сюди потрібно функції:
+		1)зчитування даних з файлу
+		1.5)Сеттери і Геттери
+		2)перепис масиву з кольорами пікселів в більший розмір  ---------------------Готово
+		2.1) Можна попереднь заповнити цей масив кольорами NULL, щоб не біло траблів при зчитуванні + буде змога знайти "порожні" пікселі -----------------Готово
+		3)сама інтерполяція. Я за бікубічну (чи взагалі білінійну, бо фільт Ланцоша я посеред ночі не врубаю). Вона виконується над всім масивом даних ------------------Готово
+		4)Функція для запису даних назад в новий файл. Шапка змінюється лише в місці розміру файла та довжинах сторін
+		
 	*/
 	BMPHEAD bmpFile;
 	int new_sizeY; //= static_cast<int>(bmpFile.hight * augment)
 	int old_sizeY; //= bmpFile.hight
 	int new_sizeX; //= static_cast<int>(bmpFile.width * augment)
 	int old_sizeX; //= bmpFile.width
-	PIXELDATA** color_table = new PIXELDATA* [new_sizeY];//С†Рµ РјР°СЃРёРІ, РІ СЏРєРёР№ РјРё Р±СѓРґРµРјРѕ Р·Р±РµСЂС–РіР°С‚Рё Р·РЅР°С‡РµРЅРЅСЏ РєРѕР»СЊРѕСЂСѓ РґР»СЏ РїС–РєСЃРµР»С–РІ, РІС–РЅ РІР¶Рµ РїРѕРІРЅС–СЃС‚СЋ С–РЅС–С†С–Р°Р»С–Р·РѕРІР°РЅРёР№, Р№РѕРіРѕ С‡С–РїР°С‚Рё РЅРµ РїРѕС‚СЂС–Р±РЅРѕ
-	PIXELDATA** initial_table = new PIXELDATA * [old_sizeY];//С†Рµ РїРѕС‡Р°С‚РєРѕРІРёР№ РјР°СЃРёРІ Р· РєРѕР»СЊРѕСЂР°РјРё, Р№РѕРіРѕ С‚СЂРµР±Р° Р·С‡РёС‚Р°С‚Рё С– С–РЅС–С†С–Р°Р»С–Р·СѓРІР°С‚Рё РїРѕ РҐ
-	double augment; //РєРѕРµС„С–С†С–РµРЅС‚ Р·Р±С–Р»СЊС€РµРЅРЅСЏ
-	string inFile, outFile; //С–РјРµРЅР° С„Р°Р№Р»С–РІ
-	void bicubic_interpolation(); //Р±С–РєСѓР±С–С‡РЅР° С–РЅС‚РµСЂРїРѕР»СЏС†С–СЏ РґР»СЏ РІСЃСЊРѕРіРѕ РјР°СЃРёРІСѓ РєРѕР»СЊРѕСЂС–РІ
-	void streatch(); //СЃС‚РІРѕСЂРµРЅРЅСЏ РјР°СЃРёРІСѓ РєРѕР»СЊРѕСЂС–РІ С– Р№РѕРіРѕ СЂРѕР·С€РёСЂРµРЅРЅСЏ
-	PIXELDATA full_NULL(); //Р—Р°РїРѕРІРЅСЋС” 1 РїС–РєСЃРµР»СЊ РґР»СЏ РІСЃС–С… РєР°РЅР°Р»С–РІ (РѕРєСЂС–Рј Р°Р»СЊС„Р°) Р·РЅР°С‡РµРЅРЅСЏРј РќРЈРЈР›
-	void full_NULL_mas(); //Р—Р°РїРѕРІРЅСЋС” РІРµСЃСЊ 2Рґ РјР°СЃРёРІ РїС–РєСЃРµР»СЏРјРё Р·С– Р·РЅР°С‡РµРЅРЅСЏРј РќРЈРЈР›
-	bool is_empty_(PIXELDATA pix); //РџРµСЂРµРІС–СЂСЏС” С‡Рё РґР°РЅРёР№ РїС–РєСЃРµР»СЊ РїРѕСЂРѕР¶РЅС–Р№ 
-	bool exist(int i, int j); //РїРµСЂРµРІС–СЂСЏС” РґРѕСЃС‚СѓРїРЅС–СЃС‚СЊ РєРѕРµС„С–С†С–С”РЅС‚С–РІ РґР»СЏ РїРµСЂРµРјС–С‰РµРЅРЅСЏ РїРѕ РјР°СЃРёРІСѓ
-	PIXELDATA calculate_color(int i, int j); //СЂР°С…СѓС” РєРѕР»С–СЂ  РґР»СЏ РѕРґРЅРѕРіРѕ РїС–РєСЃРµР»СЏ
-	PIXELDATA sum_pix(PIXELDATA pix1, PIXELDATA pix2, int a); //СЃСѓРјР° Р·РЅР°С‡РµРЅСЊ РєРѕР»СЊРѕСЂС–РІ РґРІРѕС… РїС–РєСЃРµР»С–РІ, РґРµ 2РёР№ РјРѕР¶Рµ Р±СЂР°С‚РёСЃСЏ Р° СЂР°Р·С–РІ
-	PIXELDATA div_pix(PIXELDATA pix, int8_t count); //С‡Р°СЃС‚РєР° Р·РЅР°С‡РµРЅРЅСЏ РєРѕР»СЊРѕСЂСѓ РїС–РєСЃРµР»СЏ С‚Р° СЏРєРѕРіРѕСЃСЊ С‡РёСЃР»Р° (РґР»СЏ Р·РЅР°С…РѕРґР¶РµРЅРЅСЏ СЃРµСЂРµРґРЅСЊРѕРіРѕ Р·РЅР°С‡РµРЅРЅСЏ РєРѕР»СЊРѕСЂСѓ)
+	PIXELDATA** color_table = new PIXELDATA * [new_sizeY];//це масив, в який ми будемо зберігати значення кольору для пікселів, він вже повністю ініціалізований, його чіпати не потрібно
+	PIXELDATA** initial_table = new PIXELDATA * [old_sizeY];//це початковий масив з кольорами, його треба зчитати і ініціалізувати по Х
+	double augment; //коефіціент збільшення
+	string inFile, outFile; //імена файлів
+	int get32Bit(char arr[]); 
+	int getDataFromFile();
+	void bicubic_interpolation(); //бікубічна інтерполяція для всього масиву кольорів
+	void streatch(); //створення масиву кольорів і його розширення
+	
+	PIXELDATA full_NULL(); //Заповнює 1 піксель для всіх каналів (окрім альфа) значенням НУУЛ
+	void full_NULL_mas(); //Заповнює весь 2д масив пікселями зі значенням НУУЛ
+	bool is_empty_(PIXELDATA pix); //Перевіряє чи даний піксель порожній 
+	bool exist(int i, int j); //перевіряє доступність коефіцієнтів для переміщення по масиву
+	PIXELDATA calculate_color(int i, int j); //рахує колір  для одного пікселя
+	PIXELDATA sum_pix(PIXELDATA pix1, PIXELDATA pix2, int a); //сума значень кольорів двох пікселів, де 2ий може братися а разів
+	PIXELDATA div_pix(PIXELDATA pix, int8_t count); //частка значення кольору пікселя та якогось числа (для знаходження середнього значення кольору)
 };
-Picture::Picture(string inFile, string outFile, double augment) 
+
+Picture::Picture(string inFile, string outFile, double augment)
 {
-	this->augment = augment; //РІ СЃРєС–Р»СЊРєРё СЂР°Р·С–РІ Р·Р±С–Р»СЊС€СѓРІР°С‚Рё
+	this->augment = augment; //в скільки разів збільшувати
 	this->inFile = inFile;
 	this->outFile = outFile;
 }
+
+int Picture::get32Bit(char arr[]) {
+	int helpArr[4][2];
+	uint32_t a = 0;
+	for (int i = 0; i < 4; i++) {
+		if ((int)arr[i] < 0) {
+			helpArr[i][0] = (256 + (int)arr[i]) / 16;
+			helpArr[i][1] = (256 + (int)arr[i]) % 16;
+			i++;
+		}
+		helpArr[i][0] = ((int)arr[i]) / 16;
+		helpArr[i][1] = ((int)arr[i]) % 16;
+	}
+
+	int powMy = 0;
+	for (int i = 0; i < 4; i++) {
+		a = a + helpArr[i][1] * pow(16, powMy) + helpArr[i][0] * (pow(16, powMy + 1));
+		powMy = powMy + 2;
+	}
+	return a;
+}
+
+int Picture::getDataFromFile(){
+	ifstream fin("inFile.bmp", ios::binary);
+	ofstream outfin("outFlile.bmp", ios::binary);
+	if (!fin.is_open) { cout << "In thes folder isn't such file to take data!"; }
+	if (!outfin.is_open) { cout << "In thes folder isn't such file!"; }
+	else {
+		char arr[8];
+
+		//BMP header
+
+		// 0 bit, size - 2
+		fin.read(arr, 2);
+		if (arr[0] != 'B' || arr[1] != 'M') { cout << "It's not a BMP! "; return -1; }
+		outfin.write(arr, 2);
+
+		// 2 bit, size 4
+		fin.read(arr, 4);
+		int32_t sizeFile = get32Bit(arr);//размер файла байт
+		outfin.write((char*)&sizeFile, 4);
+
+		// 6 bit 
+		fin.read(arr, 4);
+		outfin.write(arr, 4);
+		//10 bit
+		fin.read(arr, 4);
+		const int32_t dataOfMap = get32Bit(arr); // расположение байта мапа
+		outfin.write(arr, 4);
+
+		// DIB header
+		//14 bit
+		fin.read(arr, 4);
+		const int32_t dibHeaderSize = get32Bit(arr); // размер DIB headra
+		outfin.write(arr, 4);
+		//18 bit
+		fin.read(arr, 4);
+		const int32_t pixelWidth = get32Bit(arr); // ширина пикселей
+		outfin.write(arr, 4);
+		//22 bit
+		fin.read(arr, 4);
+		const int32_t pixelHight = get32Bit(arr); // высота пикселей
+		outfin.write(arr, 4);
+		//26 bit
+		fin.read(arr, 8);
+		outfin.write(arr, 8);
+		//34 bit
+		fin.read(arr, 4);
+		const int32_t imageSize = get32Bit(arr); // размер картинки
+		outfin.write(arr, 4);
+		//38 bit
+		fin.read(arr, 4);
+		const int32_t horizResolution = get32Bit(arr); // ширина резолюции в метрах
+		outfin.write(arr, 4);
+		//42 bit size 4
+		fin.read(arr, 4);
+		const int32_t vertResolution = get32Bit(arr); // высота резолюции в метрах
+		outfin.write(arr, 4);
+
+		//DIB color profile
+		char* tempArr = new char[dataOfMap - 46];
+		int tempSize = dataOfMap - 46;
+		cout << tempSize;
+		// read to map element
+		fin.read(tempArr, tempSize);
+		outfin.write(tempArr, tempSize);
+		delete[] tempArr;
+		fin.close();
+	}
+	return 0;
+}
+
 void Picture::resize_picture()
 {
-	//С‚СѓС‚ Р·С‡РёС‚СѓРІР°РЅРЅСЏ РґР°РЅРЅРёС…, СЃРµС‚С‚РµСЂРё РґР»СЏ С…РµРґРґРµСЂС–РІ С‚Р° РјР°СЃРёРІСѓ РєРѕР»СЊРѕСЂС–РІ
+	//тут зчитування данних, сеттери для хеддерів та масиву кольорів
 	bicubic_interpolation();
 }
 
@@ -92,9 +190,9 @@ void Picture::bicubic_interpolation()
 	{
 		for (int j = 0; j < new_sizeX; j++)
 		{
-			if (is_empty_(color_table[i][j])) 
+			if (is_empty_(color_table[i][j]))
 			{
-				color_table[i][j] = calculate_color(i,j); 
+				color_table[i][j] = calculate_color(i, j);
 			}
 		}
 	}
@@ -103,11 +201,11 @@ PIXELDATA Picture::calculate_color(int i, int j)
 {
 	NEIGHBORHOOD near;
 	near.fir = near.sec = near.thi = near.fou = near.fif = full_NULL();
-	int8_t count = 0, parts=0;
+	int8_t count = 0, parts = 0;
 	for (int b = -1; b < 2; b += 2)
 	{
-		if (exist(i, j + b)) { count++; near.fir = sum_pix(near.fir, color_table[i][j + b],1); }
-		if (exist(i + b, j)) { count++; near.fir = sum_pix(near.fir, color_table[i + b][j],1); }
+		if (exist(i, j + b)) { count++; near.fir = sum_pix(near.fir, color_table[i][j + b], 1); }
+		if (exist(i + b, j)) { count++; near.fir = sum_pix(near.fir, color_table[i + b][j], 1); }
 	}
 	if (count != 0) { near.sec = div_pix(near.fir, count); }
 	count = 0;
@@ -115,15 +213,15 @@ PIXELDATA Picture::calculate_color(int i, int j)
 	{
 		for (int b = -1; b < 2; b += 2)
 		{
-			if (exist(i + a, j + b)) { count++; near.sec = sum_pix(near.sec,color_table[i + a][j + b],1); }
+			if (exist(i + a, j + b)) { count++; near.sec = sum_pix(near.sec, color_table[i + a][j + b], 1); }
 		}
 	}
 	if (count != 0) { near.sec = div_pix(near.sec, count); }
 	count = 0;
 	for (int b = -2; b < 3; b += 4)
 	{
-		if (exist(i, j + b)) { count++; near.thi = sum_pix(near.thi, color_table[i][j + b],1); }
-		if (exist(i + b, j)) { count++; near.thi = sum_pix(near.thi, color_table[i + b][j],1); }
+		if (exist(i, j + b)) { count++; near.thi = sum_pix(near.thi, color_table[i][j + b], 1); }
+		if (exist(i + b, j)) { count++; near.thi = sum_pix(near.thi, color_table[i + b][j], 1); }
 	}
 	if (count != 0) { near.thi = div_pix(near.thi, count); }
 	count = 0;
@@ -131,7 +229,7 @@ PIXELDATA Picture::calculate_color(int i, int j)
 	{
 		for (int b = -2; b < 3; b += 4)
 		{
-			if (exist(i + a, j + b)) { count++; near.fif = sum_pix(near.fif, color_table[i + a][j + b],1); }
+			if (exist(i + a, j + b)) { count++; near.fif = sum_pix(near.fif, color_table[i + a][j + b], 1); }
 		}
 	}
 	if (count != 0) { near.fif = div_pix(near.fif, count); }
@@ -140,22 +238,32 @@ PIXELDATA Picture::calculate_color(int i, int j)
 	{
 		for (int b = -1; b < 2; b += 2)
 		{
-			if (exist(i + a, j + b)) { count++; near.fif = sum_pix(near.fif, color_table[i + a][j + b],1); }
-			if (exist(i + b, j + a)) { count++; near.fif = sum_pix(near.fif, color_table[i + b][j + a],1); }
+			if (exist(i + a, j + b)) { count++; near.fif = sum_pix(near.fif, color_table[i + a][j + b], 1); }
+			if (exist(i + b, j + a)) { count++; near.fif = sum_pix(near.fif, color_table[i + b][j + a], 1); }
 		}
 	}
 	if (count != 0) { near.fou = div_pix(near.fou, count); }
 	count = 0;
 	if (!is_empty_(near.fir))
-	{color_table[i][j] = sum_pix(color_table[i][j], near.fir, 5); parts = parts + 5;}
+	{
+		color_table[i][j] = sum_pix(color_table[i][j], near.fir, 5); parts = parts + 5;
+	}
 	if (!is_empty_(near.sec))
-	{color_table[i][j] = sum_pix(color_table[i][j], near.sec, 4); parts = parts + 4;}
+	{
+		color_table[i][j] = sum_pix(color_table[i][j], near.sec, 4); parts = parts + 4;
+	}
 	if (!is_empty_(near.thi))
-	{color_table[i][j] = sum_pix(color_table[i][j], near.thi, 3); parts = parts + 3;}
+	{
+		color_table[i][j] = sum_pix(color_table[i][j], near.thi, 3); parts = parts + 3;
+	}
 	if (!is_empty_(near.fou))
-	{color_table[i][j] = sum_pix(color_table[i][j], near.fou, 2); parts = parts + 2;}
+	{
+		color_table[i][j] = sum_pix(color_table[i][j], near.fou, 2); parts = parts + 2;
+	}
 	if (!is_empty_(near.fif))
-	{color_table[i][j] = sum_pix(color_table[i][j], near.fif, 1); parts = parts + 1;}
+	{
+		color_table[i][j] = sum_pix(color_table[i][j], near.fif, 1); parts = parts + 1;
+	}
 	color_table[i][j] = div_pix(color_table[i][j], parts);
 	return color_table[i][j];
 }
@@ -169,9 +277,9 @@ PIXELDATA Picture::div_pix(PIXELDATA pix, int8_t count)
 PIXELDATA Picture::sum_pix(PIXELDATA pix1, PIXELDATA pix2, int a)
 {
 	PIXELDATA pix3;
-	pix3.blueComponent=pix1.blueComponent +a* pix2.blueComponent;
-	pix3.greenComponent= pix1.greenComponent +a* pix2.greenComponent;
-	pix3.redComponent=pix1.redComponent +a* pix2.redComponent;
+	pix3.blueComponent = pix1.blueComponent + a * pix2.blueComponent;
+	pix3.greenComponent = pix1.greenComponent + a * pix2.greenComponent;
+	pix3.redComponent = pix1.redComponent + a * pix2.redComponent;
 	return pix3;
 }
 
@@ -212,7 +320,7 @@ void Picture::streatch()
 {
 	for (int a = 0; a < old_sizeX; a++)
 	{
-		color_table[a]=new PIXELDATA [new_sizeX];
+		color_table[a] = new PIXELDATA[new_sizeX];
 	}
 	for (int i = 0; i < old_sizeY; i++)
 	{
@@ -223,9 +331,9 @@ void Picture::streatch()
 	}
 }
 
-double str_to_int(string help) 
+double str_to_int(string help)
 {
-	double a = 0, numer=10, tail=1, power=1;
+	double a = 0, numer = 10, tail = 1, power = 1;
 	for (int i = 0; i < help.size(); i++)
 	{
 		if (help[i] != '.' && help[i] != ',') { a = a * numer + (help[i] - 48) * pow(tail, power); power++; }
@@ -234,10 +342,10 @@ double str_to_int(string help)
 	return a;
 }
 
-int main(int argc, char* argv[])//Р·Р°РїСѓСЃРєР°С‚СЊ Р· РєРѕРЅСЃРѕР»С– С– РїРёС€РµС€ С‰РѕСЃСЊ С‚РёРїСѓ !! OP_LR4_Home.exe(РЅР°Р·РІС– РїСЂРѕРµРєС‚Сѓ) data.txt data3.txt 234,567(С‡РёСЃР»Рѕ Р·Р±С–Р»СЊС€РµРЅРЅСЏ, РјРѕР¶РЅР° С– С‡РµСЂРµР· С‚РѕС‡РєСѓ)!!
+int main(int argc, char* argv[])//запускать з консолі і пишеш щось типу !! OP_LR4_Home.exe(назві проекту) data.txt data3.txt 234,567(число збільшення, можна і через точку)!!
 {
-	double plusultra = 1;//РІ СЃРєС–Р»СЊРєРё СЂР°Р·С–РІ Р·Р±С–Р»СЊС€СѓРІР°С‚Рё
-	string inFile, outFile, help;//РЅР°Р·РІРё РІС…С–РґРЅРѕРіРѕ С‚Р° РІРёС…С–РґРЅРѕРіРѕ С„Р°Р№Р»С–РІ, РґРѕРїРѕРјС–Р¶РЅРёР№ СЂСЏРґРѕРє РґР»СЏ Р·С‡РёС‚СѓРІР°РЅРЅСЏ Р·Р±С–Р»СЊС€РµРЅРЅСЏ
+	double plusultra = 1;//в скільки разів збільшувати
+	string inFile, outFile, help;//назви вхідного та вихідного файлів, допоміжний рядок для зчитування збільшення
 	if (argc > 1)
 	{
 		inFile = argv[1]; cout << inFile << endl;
