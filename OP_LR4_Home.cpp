@@ -56,11 +56,9 @@ private:/*сюди потрібно функції:
 	*/
 	BMPHEAD bmpFile;
 	int new_sizeY; //= static_cast<int>(bmpFile.hight * augment)
-	int old_sizeY; //= bmpFile.hight
 	int new_sizeX; //= static_cast<int>(bmpFile.width * augment)
-	int old_sizeX; //= bmpFile.width
-	PIXELDATA** color_table = new PIXELDATA * [new_sizeY];//це масив, в який ми будемо зберігати значення кольору для пікселів, він вже повністю ініціалізований, його чіпати не потрібно
-	PIXELDATA** initial_table = new PIXELDATA * [old_sizeY];//це початковий масив з кольорами, його треба зчитати і ініціалізувати по Х
+	PIXELDATA** color_table ;//це масив, в який ми будемо зберігати значення кольору для пікселів, він вже повністю ініціалізований, його чіпати не потрібно
+	PIXELDATA** initial_table ;//це початковий масив з кольорами, його треба зчитати і ініціалізувати по Х
 	double augment; //коефіціент збільшення
 	string inFile, outFile; //імена файлів
 	int get32Bit(char arr[]); 
@@ -144,7 +142,7 @@ int Picture::getDataFromFile(){
 		outfin.write(arr, 4);
 		//22 bit
 		fin.read(arr, 4);
-		const int32_t pixelHight = get32Bit(arr); // высота пикселей
+		bmpFile.hight = get32Bit(arr); // высота пикселей
 		outfin.write(arr, 4);
 		//26 bit
 		fin.read(arr, 8);
@@ -318,10 +316,12 @@ void Picture::full_NULL_mas()
 
 void Picture::streatch()
 {
+	color_table = new PIXELDATA * [new_sizeY];
 	for (int a = 0; a < old_sizeX; a++)
 	{
 		color_table[a] = new PIXELDATA[new_sizeX];
 	}
+	full_NULL_mas();
 	for (int i = 0; i < old_sizeY; i++)
 	{
 		for (int j = 0; j < old_sizeX; j++)
